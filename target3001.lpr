@@ -179,85 +179,88 @@ var
   end;
 label Cleanup;
 begin
-  result := PChar('');
-  aFile := TFileStream.Create(FileToLoad,fmOpenRead);
-  mDS := TMemDataset.Create(nil);
-  aVersion := aFile.ReadByte;
-  case aVersion of
-  21:aTarget := 'Target V14.9';
-  end;
-  //undefined
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aFont := ReadBinaryString(aFile);
-  bFont := ReadBinaryString(aFile);
-  cFont := ReadBinaryString(aFile);
-  SetLength(Divider,4);
-  aFile.ReadByte;
-  aFile.Read(Divider[1],4);
-  //Unknown Stuff
-  //Block of 78xFF
-  if not SearchToBinString(aFile,BuildBinStr(char($ff),78)) then goto Cleanup;
-  //Signale/Schaltung
-    //Scheibar druch Divider getrennt (E0 93 04 00)
-  //Komponenten
-    //every component starts with 11x00+1xFF
-    //Parameter readable with ReadBinaryPair
-    //TODO:Position and additional parameter
-    //Französisch,English,Deutsch Bauteilname ??
-    //Font
-    //Französisch,English,Deutsch Bauteilwert ??
-    //Font
-  mDS.FieldDefs.Add('BAUTEILNAME',ftString,100);
-  mDS.FieldDefs.Add('NAME',ftString,100);
-  mDS.FieldDefs.Add('VALUE',ftString,100);
-  mDS.FieldDefs.Add('COMPONENT_ID',ftString,100);
-  mDS.FieldDefs.Add('COMPONENT_NAME',ftString,100);
-  mDS.FieldDefs.Add('PROPOSED_PACKAGE',ftString,100);
-  mDS.FieldDefs.Add('BIB_BAUTEIL',ftString,100);
-  mDS.FieldDefs.Add('LAST_MODIFIED',ftString,100);
-  mDS.FieldDefs.Add('COMPONENTTYPE',ftString,100);
-  mDS.FieldDefs.Add('COMPONENT_VALUE',ftString,100);
-  mDS.FieldDefs.Add('VARIANT=0',ftString,100);
-  mDS.FieldDefs.Add('VARIANT=1',ftString,100);
-  mDs.CreateTable;
-  mDs.Open;
-  aText := FindComponents(aFile,mDS);
-  //8xDivider (E0 93 04 00)
-  //if not SearchToBinString(aFile,Divider+Divider+Divider+Divider+Divider+Divider+Divider+Divider) then goto Cleanup;
-  //Simulation Models
-  if not SearchToBinString(aFile,BuildBinStr(char($00),100)) then exit;//100x00
-  //Layer List
-  if not SearchToBinString(aFile,BuildBinStr(char($00),100)) then exit;//100x00
-  //Fonts or other embedded Blob Stuff
-  //2xDivider (E0 93 04 00)
-  if not SearchToBinString(aFile,Divider) then goto Cleanup;
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aFile.ReadByte;
-  aPos := aFile.Position;
-  aVersionInfo := ReadBinaryString(aFile);
-  aLogBook := ReadBinaryString(aFile);
-  aTodo := ReadBinaryString(aFile);
-  aText += 'Version Info:'+LineEnding+aVersionInfo;
-  aText += 'Logbuch:'+LineEnding+aLogBook;
-  aText += 'Todo:'+LineEnding+aTodo;
-
-  aText += 'Teile:'+LineEnding;
-  mDS.First;
-  while not mDS.EOF do
-    begin
-      aText += mDs.FieldByName('NAME').AsString+#19+mDs.FieldByName('VALUE').AsString+LineEnding;
-      mDs.Next;
+  try
+    result := PChar('');
+    aFile := TFileStream.Create(FileToLoad,fmOpenRead);
+    mDS := TMemDataset.Create(nil);
+    aVersion := aFile.ReadByte;
+    case aVersion of
+    21:aTarget := 'Target V14.9';
     end;
-Cleanup:
-  mDS.Free;
-  aFile.Free;
-  ResText:=UniToSys(aText);
-  result := PChar(ResText);
+    //undefined
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aFont := ReadBinaryString(aFile);
+    bFont := ReadBinaryString(aFile);
+    cFont := ReadBinaryString(aFile);
+    SetLength(Divider,4);
+    aFile.ReadByte;
+    aFile.Read(Divider[1],4);
+    //Unknown Stuff
+    //Block of 78xFF
+    if not SearchToBinString(aFile,BuildBinStr(char($ff),78)) then goto Cleanup;
+    //Signale/Schaltung
+      //Scheibar druch Divider getrennt (E0 93 04 00)
+    //Komponenten
+      //every component starts with 11x00+1xFF
+      //Parameter readable with ReadBinaryPair
+      //TODO:Position and additional parameter
+      //Französisch,English,Deutsch Bauteilname ??
+      //Font
+      //Französisch,English,Deutsch Bauteilwert ??
+      //Font
+    mDS.FieldDefs.Add('BAUTEILNAME',ftString,100);
+    mDS.FieldDefs.Add('NAME',ftString,100);
+    mDS.FieldDefs.Add('VALUE',ftString,100);
+    mDS.FieldDefs.Add('COMPONENT_ID',ftString,100);
+    mDS.FieldDefs.Add('COMPONENT_NAME',ftString,100);
+    mDS.FieldDefs.Add('PROPOSED_PACKAGE',ftString,100);
+    mDS.FieldDefs.Add('BIB_BAUTEIL',ftString,100);
+    mDS.FieldDefs.Add('LAST_MODIFIED',ftString,100);
+    mDS.FieldDefs.Add('COMPONENTTYPE',ftString,100);
+    mDS.FieldDefs.Add('COMPONENT_VALUE',ftString,100);
+    mDS.FieldDefs.Add('VARIANT=0',ftString,100);
+    mDS.FieldDefs.Add('VARIANT=1',ftString,100);
+    mDs.CreateTable;
+    mDs.Open;
+    aText := FindComponents(aFile,mDS);
+    //8xDivider (E0 93 04 00)
+    //if not SearchToBinString(aFile,Divider+Divider+Divider+Divider+Divider+Divider+Divider+Divider) then goto Cleanup;
+    //Simulation Models
+    if not SearchToBinString(aFile,BuildBinStr(char($00),100)) then exit;//100x00
+    //Layer List
+    if not SearchToBinString(aFile,BuildBinStr(char($00),100)) then exit;//100x00
+    //Fonts or other embedded Blob Stuff
+    //2xDivider (E0 93 04 00)
+    if not SearchToBinString(aFile,Divider) then goto Cleanup;
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aFile.ReadByte;
+    aPos := aFile.Position;
+    aVersionInfo := ReadBinaryString(aFile);
+    aLogBook := ReadBinaryString(aFile);
+    aTodo := ReadBinaryString(aFile);
+    aText += 'Version Info:'+LineEnding+aVersionInfo;
+    aText += 'Logbuch:'+LineEnding+aLogBook;
+    aText += 'Todo:'+LineEnding+aTodo;
+
+    aText += 'Teile:'+LineEnding;
+    mDS.First;
+    while not mDS.EOF do
+      begin
+        aText += mDs.FieldByName('NAME').AsString+#19+mDs.FieldByName('VALUE').AsString+LineEnding;
+        mDs.Next;
+      end;
+  Cleanup:
+    mDS.Free;
+    aFile.Free;
+    ResText:=UniToSys(aText);
+    result := PChar(ResText);
+  except
+  end;
 end;
 
 exports
